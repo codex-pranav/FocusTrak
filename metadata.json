@@ -1,0 +1,6 @@
+{
+  "name": "Ubuntu Todo & Productivity",
+  "description": "A premium, feature-rich desktop-grade Todo and Productivity application featuring Kanban boards, Pomodoro timer, rich text Notes, calendar views, Habit and Goal trackers, and visual statistics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
