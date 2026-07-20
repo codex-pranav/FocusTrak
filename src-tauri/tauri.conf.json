@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Pranav Productivity",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.pranav.productivity",
   "build": {
     "frontendDist": "dist",
     "devUrl": "http://localhost:3000",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "To-Do",
+        "title": "Pranav Productivity",
         "width": 800,
         "height": 600,
         "resizable": true,
