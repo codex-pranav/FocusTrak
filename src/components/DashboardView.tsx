@@ -292,7 +292,7 @@ export default function DashboardView({
           <select
             value={quickCategory}
             onChange={e => setQuickCategory(e.target.value)}
-            className="bg-zinc-50 dark:bg-sophisticated-bg text-[10px] font-medium text-gray-600 dark:text-sophisticated-text border border-gray-100 dark:border-sophisticated-border rounded px-2 py-1 outline-none cursor-pointer"
+            className="bg-zinc-50 dark:bg-sophisticated-bg text-[10px] font-medium text-gray-600 dark:text-sophisticated-text border border-gray-100 dark:border-sophisticated-border rounded px-2 py-1 outline-none cursor-pointer dark:[color-scheme:dark]"
           >
             {categories.map(c => (
               <option key={c.id} value={c.name}>{c.name}</option>
@@ -301,7 +301,7 @@ export default function DashboardView({
           <select
             value={quickPriority}
             onChange={e => setQuickPriority(e.target.value as Priority)}
-            className="bg-zinc-50 dark:bg-sophisticated-bg text-[10px] font-medium text-gray-600 dark:text-sophisticated-text border border-gray-100 dark:border-sophisticated-border rounded px-2 py-1 outline-none cursor-pointer"
+            className="bg-zinc-50 dark:bg-sophisticated-bg text-[10px] font-medium text-gray-600 dark:text-sophisticated-text border border-gray-100 dark:border-sophisticated-border rounded px-2 py-1 outline-none cursor-pointer dark:[color-scheme:dark]"
           >
             {Object.values(Priority).map(p => (
               <option key={p} value={p}>{p}</option>

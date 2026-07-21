@@ -157,7 +157,7 @@ const INITIAL_LOGS: ActivityLog[] = [
     id: 'l1',
     action: 'Workspace Setup',
     timestamp: new Date().toISOString(),
-    details: 'Productivity workspace initialized with SQLite DB model connections.'
+    details: 'Workspace initialized successfully.'
   }
 ];
 

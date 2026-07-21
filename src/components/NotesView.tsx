@@ -246,7 +246,7 @@ export default function NotesView({
                 <select
                   value={taskLinkId}
                   onChange={e => setTaskLinkId(e.target.value)}
-                  className="bg-transparent text-[10px] font-semibold text-gray-600 dark:text-sophisticated-text outline-none cursor-pointer"
+                  className="bg-transparent text-[10px] font-semibold text-gray-600 dark:text-sophisticated-text outline-none cursor-pointer dark:[color-scheme:dark]"
                 >
                   <option value="">Link to task...</option>
                   {tasks.filter(t => !t.recentlyDeleted).map(t => (

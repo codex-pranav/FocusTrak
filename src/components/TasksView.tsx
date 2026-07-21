@@ -622,7 +622,7 @@ export default function TasksView({
           >
             <div className="px-5 py-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center">
               <h3 className="text-sm font-bold text-gray-900 dark:text-zinc-100 tracking-tight flex items-center gap-2">
-                {editingTask ? 'Edit Productivity Task' : 'Schedule New Productivity Task'}
+                  {editingTask ? 'Edit Task' : 'Create New Task'}
               </h3>
               <button 
                 type="button"

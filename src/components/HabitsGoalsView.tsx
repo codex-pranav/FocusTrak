@@ -127,7 +127,7 @@ export default function HabitsGoalsView({
                 <select
                   value={habitFrequency}
                   onChange={e => setHabitFrequency(e.target.value as any)}
-                  className="w-full bg-gray-50 dark:bg-sophisticated-bg border border-gray-100 dark:border-sophisticated-border px-2.5 py-1 text-xs outline-none rounded text-gray-800 dark:text-sophisticated-text focus:border-sophisticated-accent"
+                  className="w-full bg-gray-50 dark:bg-sophisticated-bg border border-gray-100 dark:border-sophisticated-border px-2.5 py-1 text-xs outline-none rounded text-gray-800 dark:text-sophisticated-text focus:border-sophisticated-accent dark:[color-scheme:dark]"
                 >
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
@@ -138,7 +138,7 @@ export default function HabitsGoalsView({
                 <select
                   value={habitColor}
                   onChange={e => setHabitColor(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-sophisticated-bg border border-gray-100 dark:border-sophisticated-border px-2.5 py-1 text-xs outline-none rounded text-gray-800 dark:text-sophisticated-text focus:border-sophisticated-accent"
+                  className="w-full bg-gray-50 dark:bg-sophisticated-bg border border-gray-100 dark:border-sophisticated-border px-2.5 py-1 text-xs outline-none rounded text-gray-800 dark:text-sophisticated-text focus:border-sophisticated-accent dark:[color-scheme:dark]"
                 >
                   <option value="#6366f1">Indigo</option>
                   <option value="#10b981">Emerald</option>
@@ -255,7 +255,7 @@ export default function HabitsGoalsView({
                 <input
                   type="number"
                   min="0"
-                  className="w-full bg-gray-50 dark:bg-sophisticated-bg border border-gray-100 dark:border-sophisticated-border px-2.5 py-1 text-xs outline-none rounded text-gray-800 dark:text-sophisticated-text focus:border-sophisticated-accent"
+                  className="w-full bg-gray-50 dark:bg-sophisticated-bg border border-gray-100 dark:border-sophisticated-border px-2.5 py-1 text-xs outline-none rounded text-gray-800 dark:text-sophisticated-text focus:border-sophisticated-accent dark:[color-scheme:dark]"
                   value={goalCurrent}
                   onChange={e => setGoalCurrent(Number(e.target.value))}
                 />
