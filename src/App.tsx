@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { getDatabase } from "./database/db.ts";
-import { 
-  Task, 
-  Category, 
-  Note, 
-  Habit, 
-  Goal, 
-  ActivityLog, 
-  AppSettings, 
-  Priority, 
-  Status 
+
+import { addTask, getAllTasks } from "./database/taskrepo";
+import {
+  Task,
+  Category,
+  Note,
+  Habit,
+  Goal,
+  ActivityLog,
+  AppSettings,
+  Priority,
+  Status
 } from './types';
 import Sidebar from './components/Sidebar';
 import DashboardView from './components/DashboardView';
@@ -406,7 +407,7 @@ export default function App() {
       if (h.id !== habitId) return h;
       const isCompleted = h.history?.[dateStr] || false;
       const updatedHistory = { ...h.history, [dateStr]: !isCompleted };
-      
+
       // Basic dynamic streak calculator
       let calculatedStreak = h.streak;
       if (!isCompleted) calculatedStreak += 1;
@@ -465,10 +466,10 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-[#f3f4f6] dark:bg-sophisticated-bg transition-colors duration-250 font-sans overflow-hidden select-none text-gray-900 dark:text-sophisticated-text">
-      
+
       {/* Sidebar navigation controls */}
-      <Sidebar 
-        activeView={activeView} 
+      <Sidebar
+        activeView={activeView}
         onViewChange={(view) => {
           setActiveView(view);
           if (window.innerWidth < 768) {
@@ -484,15 +485,15 @@ export default function App() {
 
       {/* Mobile backdrop overlay */}
       {isSidebarOpen && (
-        <div 
-          onClick={() => setIsSidebarOpen(false)} 
+        <div
+          onClick={() => setIsSidebarOpen(false)}
           className="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 md:hidden transition-opacity"
         />
       )}
 
       {/* Main Workspace Frame container */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        
+
         {/* Workspace Top Header Bar */}
         <header className="h-14 px-6 border-b border-gray-100 dark:border-sophisticated-border bg-white/80 dark:bg-sophisticated-sidebar/80 backdrop-blur-md flex items-center justify-between shrink-0 z-10">
           <div className="flex items-center gap-3">
@@ -518,9 +519,9 @@ export default function App() {
 
         {/* Dynamic Workspace Workspace */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
-          
+
           {activeView === 'dashboard' && (
-            <DashboardView 
+            <DashboardView
               tasks={tasks}
               categories={categories}
               activityLogs={activityLogs}
@@ -542,7 +543,7 @@ export default function App() {
           )}
 
           {activeView === 'tasks' && (
-            <TasksView 
+            <TasksView
               tasks={tasks}
               categories={categories}
               onAddTask={handleAddTask}
@@ -554,7 +555,7 @@ export default function App() {
           )}
 
           {activeView === 'calendar' && (
-            <CalendarView 
+            <CalendarView
               tasks={tasks}
               categories={categories}
               onUpdateTask={handleUpdateTask}
@@ -563,7 +564,7 @@ export default function App() {
           )}
 
           {activeView === 'notes' && (
-            <NotesView 
+            <NotesView
               notes={notes}
               tasks={tasks}
               onAddNote={handleAddNote}
@@ -579,7 +580,7 @@ export default function App() {
           )}
 
           {activeView === 'habits' && (
-            <HabitsGoalsView 
+            <HabitsGoalsView
               habits={habits}
               goals={goals}
               onAddHabit={handleAddHabit}
@@ -592,7 +593,7 @@ export default function App() {
           )}
 
           {activeView === 'stats' && (
-            <StatsView 
+            <StatsView
               tasks={tasks}
               categories={categories}
               streak={streak}
@@ -600,7 +601,7 @@ export default function App() {
           )}
 
           {activeView === 'settings' && (
-            <SettingsView 
+            <SettingsView
               settings={settings}
               onUpdateSettings={setSettings}
               tasks={tasks}
@@ -619,7 +620,7 @@ export default function App() {
       </main>
 
       {/* Command Palette overlays (Ctrl+P) */}
-      <CommandPalette 
+      <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
         onNavigate={(v) => {
@@ -661,7 +662,7 @@ export default function App() {
                   </p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setIsInstallModalOpen(false)}
                 className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-sophisticated-text hover:bg-gray-100 dark:hover:bg-sophisticated-active transition-colors cursor-pointer"
               >
