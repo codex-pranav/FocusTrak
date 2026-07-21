@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
-import { addTask, getAllTasks } from "./database/taskrepo";
+import {
+  addTask,
+  getAllTasks,
+  updateTask as updateTaskDB,
+  deleteTask as deleteTaskDB,
+  restoreTask as restoreTaskDB,
+  duplicateTask as duplicateTaskDB,
+  replaceAllTasks,
+} from "./database/taskrepo";
 import {
   Task,
   Category,
@@ -200,39 +208,47 @@ export default function App() {
   };
 
   // Core App states loaded from LocalStorage
-  const [settings, setSettings] = useState<AppSettings>(() => {
-    const saved = localStorage.getItem('ubuntu_settings');
-    return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
-  });
+  const readSaved = <T,>(key: string, fallback: T): T => {
+    try {
+      const value = window.localStorage.getItem(key);
+      return value ? JSON.parse(value) as T : fallback;
+    } catch {
+      return fallback;
+    }
+  };
 
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    const saved = localStorage.getItem('ubuntu_tasks');
-    return saved ? JSON.parse(saved) : INITIAL_TASKS;
-  });
+  const [settings, setSettings] = useState<AppSettings>(() => readSaved('ubuntu_settings', DEFAULT_SETTINGS));
+
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  async function loadTasks() {
+    try {
+      const dbTasks = await getAllTasks();
+      setTasks(dbTasks);
+    } catch (error) {
+      console.error("Failed to load tasks:", error);
+      setTasks(INITIAL_TASKS);
+    }
+  }
 
   const [categories, setCategories] = useState<Category[]>(() => {
-    const saved = localStorage.getItem('ubuntu_categories');
-    return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
+    return readSaved('ubuntu_categories', DEFAULT_CATEGORIES);
   });
 
   const [notes, setNotes] = useState<Note[]>(() => {
-    const saved = localStorage.getItem('ubuntu_notes');
-    return saved ? JSON.parse(saved) : INITIAL_NOTES;
+    return readSaved('ubuntu_notes', INITIAL_NOTES);
   });
 
   const [habits, setHabits] = useState<Habit[]>(() => {
-    const saved = localStorage.getItem('ubuntu_habits');
-    return saved ? JSON.parse(saved) : INITIAL_HABITS;
+    return readSaved('ubuntu_habits', INITIAL_HABITS);
   });
 
   const [goals, setGoals] = useState<Goal[]>(() => {
-    const saved = localStorage.getItem('ubuntu_goals');
-    return saved ? JSON.parse(saved) : INITIAL_GOALS;
+    return readSaved('ubuntu_goals', INITIAL_GOALS);
   });
 
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(() => {
-    const saved = localStorage.getItem('ubuntu_logs');
-    return saved ? JSON.parse(saved) : INITIAL_LOGS;
+    return readSaved('ubuntu_logs', INITIAL_LOGS);
   });
 
   const [streak, setStreak] = useState(5);
@@ -249,8 +265,8 @@ export default function App() {
   }, [settings]);
 
   useEffect(() => {
-    localStorage.setItem('ubuntu_tasks', JSON.stringify(tasks));
-  }, [tasks]);
+    loadTasks();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('ubuntu_categories', JSON.stringify(categories));
@@ -317,44 +333,64 @@ export default function App() {
   }, [settings]);
 
   // Task operation callbacks
-  const handleAddTask = (taskInput: Omit<Task, 'id' | 'createdDate'>) => {
+  const handleAddTask = async (taskInput: Omit<Task, 'id' | 'createdDate'>) => {
     const newTask: Task = {
       ...taskInput,
-      id: `task-${Date.now()}`,
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `task-${Date.now()}`,
       createdDate: new Date().toISOString()
     };
-    setTasks(prev => [newTask, ...prev]);
-    logActivity('Task Created', `Added task: "${newTask.title}" under ${newTask.category}.`);
+    try {
+      await addTask(newTask);
+      await loadTasks();
+      logActivity("Task Created", `Added task: "${newTask.title}" under ${newTask.category}.`);
+    } catch (error) {
+      console.error('Failed to add task:', error);
+    }
   };
 
-  const handleUpdateTask = (updated: Task) => {
-    setTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
-    logActivity('Task Updated', `Modified task: "${updated.title}".`);
-  };
+  const handleUpdateTask = async (updated: Task) => {
+  try {
+    await updateTaskDB(updated);
+    await loadTasks();
+    logActivity("Task Updated", `Modified task: "${updated.title}".`);
+  } catch (error) {
+    console.error('Failed to update task:', error);
+  }
+};
 
-  const handleDeleteTask = (taskId: string) => {
-    // Soft delete to allow Undo
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, recentlyDeleted: true } : t));
-    const tTitle = tasks.find(t => t.id === taskId)?.title || '';
-    logActivity('Task Deleted', `Moved task: "${tTitle}" to Trash cache.`);
-  };
+  const handleDeleteTask = async (taskId: string) => {
+  const task = tasks.find(t => t.id === taskId);
 
-  const handleRestoreTask = (taskId: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, recentlyDeleted: false } : t));
-    const tTitle = tasks.find(t => t.id === taskId)?.title || '';
-    logActivity('Task Restored', `Restored task: "${tTitle}" to timeline.`);
-  };
+  try {
+    await deleteTaskDB(taskId);
+    await loadTasks();
+    logActivity("Task Deleted", `Deleted task: "${task?.title ?? ""}".`);
+  } catch (error) {
+    console.error('Failed to delete task:', error);
+  }
+};
 
-  const handleDuplicateTask = (task: Task) => {
-    const dup: Task = {
-      ...task,
-      id: `task-dup-${Date.now()}`,
-      title: `${task.title} (Copy)`,
-      createdDate: new Date().toISOString()
-    };
-    setTasks(prev => [dup, ...prev]);
-    logActivity('Task Duplicated', `Duplicated task: "${task.title}".`);
-  };
+  const handleRestoreTask = async (taskId: string) => {
+  const task = tasks.find(t => t.id === taskId);
+
+  try {
+    await restoreTaskDB(taskId);
+    await loadTasks();
+    logActivity("Task Restored", `Restored task: "${task?.title ?? ""}".`);
+  } catch (error) {
+    console.error('Failed to restore task:', error);
+  }
+};
+
+ const handleDuplicateTask = async (task: Task) => {
+  try {
+    await duplicateTaskDB(task);
+    await loadTasks();
+    logActivity("Task Duplicated", `Duplicated task: "${task.title}".`);
+  } catch (error) {
+    console.error('Failed to duplicate task:', error);
+  }
+};
 
   // Category operations
   const handleAddCategory = (cat: Omit<Category, 'id'>) => {
@@ -443,18 +479,31 @@ export default function App() {
   };
 
   // Settings: Database transfers / reset
-  const handleImportBackup = (state: any) => {
-    if (state.tasks) setTasks(state.tasks);
+  const handleImportBackup = (state: Partial<{
+    tasks: Task[];
+    categories: Category[];
+    notes: Note[];
+    habits: Habit[];
+    goals: Goal[];
+    activityLogs: ActivityLog[];
+    settings: AppSettings;
+  }>) => {
+    if (Array.isArray(state.tasks)) {
+      setTasks(state.tasks);
+      void replaceAllTasks(state.tasks);
+    }
     if (state.categories) setCategories(state.categories);
     if (state.notes) setNotes(state.notes);
     if (state.habits) setHabits(state.habits);
     if (state.goals) setGoals(state.goals);
     if (state.activityLogs) setActivityLogs(state.activityLogs);
+    if (state.settings) setSettings(state.settings);
     logActivity('Database Restored', 'Restored complete database state from JSON.');
   };
 
   const handleClearDatabase = () => {
     setTasks([]);
+    void replaceAllTasks([]);
     setCategories(DEFAULT_CATEGORIES);
     setNotes([]);
     setHabits([]);

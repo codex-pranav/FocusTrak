@@ -25,9 +25,25 @@ interface SettingsViewProps {
   habits: Habit[];
   goals: Goal[];
   activityLogs: ActivityLog[];
-  onImportBackup: (importedState: any) => void;
+  onImportBackup: (importedState: BackupData) => void;
   onClearDatabase: () => void;
   onInstallApp?: () => void;
+}
+
+type BackupData = Partial<{
+  tasks: Task[];
+  categories: Category[];
+  notes: Note[];
+  habits: Habit[];
+  goals: Goal[];
+  activityLogs: ActivityLog[];
+  settings: AppSettings;
+}>;
+
+function isBackupData(value: unknown): value is BackupData {
+  if (!value || typeof value !== 'object') return false;
+  const data = value as Record<string, unknown>;
+  return Array.isArray(data.tasks) && Array.isArray(data.categories);
 }
 
 export default function SettingsView({
@@ -74,6 +90,7 @@ export default function SettingsView({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleBackupImportClick = () => {
@@ -87,8 +104,8 @@ export default function SettingsView({
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const importedData = JSON.parse(event.target?.result as string);
-        if (importedData.tasks && importedData.categories) {
+        const importedData: unknown = JSON.parse(event.target?.result as string);
+        if (isBackupData(importedData)) {
           onImportBackup(importedData);
           alert('Database restored successfully from local JSON backup!');
         } else {
@@ -99,6 +116,7 @@ export default function SettingsView({
       }
     };
     reader.readAsText(file);
+    e.target.value = '';
   };
 
   return (
