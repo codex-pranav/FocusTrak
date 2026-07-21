@@ -11,8 +11,7 @@ import {
   Settings as SettingsIcon,
   Command,
   UserCheck,
-  X,
-  Download
+  X
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,7 +21,6 @@ interface SidebarProps {
   settings: AppSettings;
   isOpen: boolean;
   onClose: () => void;
-  onInstallApp: () => void;
 }
 
 export default function Sidebar({
@@ -32,7 +30,6 @@ export default function Sidebar({
   settings,
   isOpen,
   onClose,
-  onInstallApp,
 }: SidebarProps) {
   
   const menuItems = [
@@ -59,11 +56,11 @@ export default function Sidebar({
         <div className="flex items-center justify-between pb-2.5 border-b border-gray-100 dark:border-sophisticated-border">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#5E6AD2] to-[#9B6AD2] flex items-center justify-center text-white font-bold text-sm shadow-md shadow-[#5E6AD2]/20">
-              {(settings.userName || 'Pranav').charAt(0).toUpperCase()}
+              {(settings.userName || 'F').charAt(0).toUpperCase()}
             </div>
             <div>
               <h1 className="text-sm font-display font-extrabold tracking-tight leading-none bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
-                {settings.suiteName || 'Pranav Suite'}
+                {settings.suiteName || 'FocusTrak'}
               </h1>
               <span className="text-[9px] font-mono font-semibold text-gray-400 dark:text-sophisticated-muted tracking-wider">OFFLINE RUNTIME</span>
             </div>
@@ -124,21 +121,11 @@ export default function Sidebar({
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-[11px] font-bold text-gray-800 dark:text-sophisticated-text truncate leading-none">
-              {settings.userName || 'Pranav'}
+              {settings.userName || 'FocusTrak user'}
             </div>
             <span className="text-[8px] font-mono text-gray-400 dark:text-sophisticated-muted tracking-wider">SINGLE USER MODE</span>
           </div>
         </div>
-
-        {/* Desktop App Installer Trigger (Notion style) */}
-        <button
-          onClick={onInstallApp}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500/15 hover:to-purple-500/15 border border-indigo-500/20 dark:border-indigo-400/30 rounded-lg text-[10px] text-indigo-600 dark:text-indigo-400 font-bold tracking-wide uppercase transition-all duration-200 cursor-pointer shadow-sm hover:scale-[1.02]"
-          title="Install as Desktop App"
-        >
-          <Download className="w-3.5 h-3.5 animate-bounce" />
-          <span>Install Desktop App</span>
-        </button>
 
       </div>
 

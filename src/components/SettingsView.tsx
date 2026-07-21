@@ -141,7 +141,7 @@ export default function SettingsView({
                 type="text"
                 value={settings.userName || ''}
                 onChange={(e) => onUpdateSettings({ ...settings, userName: e.target.value })}
-                placeholder="Pranav"
+                placeholder="Your name"
                 className="w-full text-xs font-medium px-3 py-2 bg-zinc-50 dark:bg-sophisticated-bg border border-gray-200 dark:border-sophisticated-border rounded-lg outline-none focus:border-sophisticated-accent transition-colors"
               />
             </div>
@@ -151,7 +151,7 @@ export default function SettingsView({
                 type="text"
                 value={settings.suiteName || ''}
                 onChange={(e) => onUpdateSettings({ ...settings, suiteName: e.target.value })}
-                placeholder="Pranav Suite"
+                placeholder="FocusTrak"
                 className="w-full text-xs font-medium px-3 py-2 bg-zinc-50 dark:bg-sophisticated-bg border border-gray-200 dark:border-sophisticated-border rounded-lg outline-none focus:border-sophisticated-accent transition-colors"
               />
             </div>
@@ -164,7 +164,7 @@ export default function SettingsView({
             <Monitor className="w-4 h-4 text-sophisticated-accent" /> Desktop App (Notion Style)
           </h3>
           <p className="text-[11px] text-gray-400 dark:text-sophisticated-muted leading-relaxed font-mono">
-            Install {settings.suiteName || 'Pranav Suite'} directly to your desktop or mobile home screen. It will launch in an isolated window with standard app shortcuts, high-performance offline startup, and zero browser tab clutter!
+            Install {settings.suiteName || 'FocusTrak'} directly to your desktop or mobile home screen. It will launch in an isolated window with standard app shortcuts, high-performance offline startup, and zero browser tab clutter!
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-zinc-50 dark:bg-sophisticated-bg border border-gray-150/50 dark:border-sophisticated-border/60 rounded-xl">
             <div className="space-y-1 text-center sm:text-left">

@@ -22,6 +22,8 @@ import {
   Link as LinkIcon 
 } from 'lucide-react';
 
+const CUSTOM_CATEGORY_VALUE = '__custom_category__';
+
 interface TasksViewProps {
   tasks: Task[];
   categories: Category[];
@@ -30,6 +32,7 @@ interface TasksViewProps {
   onDeleteTask: (taskId: string) => void;
   onRestoreTask: (taskId: string) => void;
   onDuplicateTask: (task: Task) => void;
+  onAddCategory: (category: Omit<Category, 'id'>) => void;
 }
 
 export default function TasksView({
@@ -40,6 +43,7 @@ export default function TasksView({
   onDeleteTask,
   onRestoreTask,
   onDuplicateTask,
+  onAddCategory,
 }: TasksViewProps) {
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [search, setSearch] = useState('');
@@ -61,6 +65,8 @@ export default function TasksView({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState(categories[0]?.name || 'Personal');
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
   const [priority, setPriority] = useState<Priority>(Priority.MEDIUM);
   const [status, setStatus] = useState<Status>(Status.PENDING);
   const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
@@ -81,6 +87,8 @@ export default function TasksView({
     setTitle('');
     setDescription('');
     setCategory(categories[0]?.name || 'Personal');
+    setIsCustomCategory(false);
+    setCustomCategory('');
     setPriority(Priority.MEDIUM);
     setStatus(Status.PENDING);
     setDueDate(new Date().toISOString().split('T')[0]);
@@ -102,6 +110,8 @@ export default function TasksView({
     setTitle(task.title);
     setDescription(task.description);
     setCategory(task.category);
+    setIsCustomCategory(!categories.some((item) => item.name === task.category));
+    setCustomCategory(task.category);
     setPriority(task.priority);
     setStatus(task.status);
     setDueDate(task.dueDate);
@@ -120,16 +130,21 @@ export default function TasksView({
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    const selectedCategory = (isCustomCategory ? customCategory : category).trim();
+    if (!title.trim() || !selectedCategory) return;
 
-    const taskColor = categories.find(c => c.name === category)?.color || '#6366f1';
+    if (!categories.some((item) => item.name.toLowerCase() === selectedCategory.toLowerCase())) {
+      onAddCategory({ name: selectedCategory, color: '#6366f1', icon: 'Tag' });
+    }
+
+    const taskColor = categories.find(c => c.name.toLowerCase() === selectedCategory.toLowerCase())?.color || '#6366f1';
 
     if (editingTask) {
       onUpdateTask({
         ...editingTask,
         title,
         description,
-        category,
+        category: selectedCategory,
         priority,
         status,
         dueDate,
@@ -149,7 +164,7 @@ export default function TasksView({
       onAddTask({
         title,
         description,
-        category,
+        category: selectedCategory,
         priority,
         status,
         dueDate,
@@ -324,7 +339,7 @@ export default function TasksView({
             <select
               value={filterCategory}
               onChange={e => setFilterCategory(e.target.value)}
-              className="bg-transparent text-xs text-gray-600 dark:text-sophisticated-text outline-none py-0.5 cursor-pointer"
+              className="bg-transparent text-xs text-gray-600 dark:text-sophisticated-text outline-none py-0.5 cursor-pointer dark:[color-scheme:dark]"
             >
               <option value="all">All Categories</option>
               {categories.map(c => (
@@ -337,7 +352,7 @@ export default function TasksView({
             <select
               value={filterPriority}
               onChange={e => setFilterPriority(e.target.value)}
-              className="bg-transparent text-xs text-gray-600 dark:text-sophisticated-text outline-none py-0.5 cursor-pointer"
+              className="bg-transparent text-xs text-gray-600 dark:text-sophisticated-text outline-none py-0.5 cursor-pointer dark:[color-scheme:dark]"
             >
               <option value="all">All Priorities</option>
               {Object.values(Priority).map(p => (
@@ -350,7 +365,7 @@ export default function TasksView({
             <select
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value)}
-              className="bg-transparent text-xs text-gray-600 dark:text-sophisticated-text outline-none py-0.5 cursor-pointer"
+              className="bg-transparent text-xs text-gray-600 dark:text-sophisticated-text outline-none py-0.5 cursor-pointer dark:[color-scheme:dark]"
             >
               <option value="all">All Statuses</option>
               {Object.values(Status).map(s => (
@@ -648,14 +663,29 @@ export default function TasksView({
                 <div>
                   <label className="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-mono mb-1">Category</label>
                   <select
-                    value={category}
-                    onChange={e => setCategory(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none"
+                    value={isCustomCategory ? CUSTOM_CATEGORY_VALUE : category}
+                    onChange={e => {
+                      const nextCategory = e.target.value;
+                      setIsCustomCategory(nextCategory === CUSTOM_CATEGORY_VALUE);
+                      if (nextCategory !== CUSTOM_CATEGORY_VALUE) setCategory(nextCategory);
+                    }}
+                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none dark:[color-scheme:dark]"
                   >
                     {categories.map(c => (
                       <option key={c.id} value={c.name}>{c.name}</option>
                     ))}
+                    <option value={CUSTOM_CATEGORY_VALUE}>Custom category…</option>
                   </select>
+                  {isCustomCategory && (
+                    <input
+                      type="text"
+                      value={customCategory}
+                      onChange={e => setCustomCategory(e.target.value)}
+                      placeholder="Type your category name"
+                      autoFocus
+                      className="mt-2 w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none"
+                    />
+                  )}
                 </div>
 
                 <div>
@@ -663,7 +693,7 @@ export default function TasksView({
                   <select
                     value={priority}
                     onChange={e => setPriority(e.target.value as Priority)}
-                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none"
+                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none dark:[color-scheme:dark]"
                   >
                     {Object.values(Priority).map(p => (
                       <option key={p} value={p}>{p}</option>
@@ -676,7 +706,7 @@ export default function TasksView({
                   <select
                     value={status}
                     onChange={e => setStatus(e.target.value as Status)}
-                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none"
+                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none dark:[color-scheme:dark]"
                   >
                     {Object.values(Status).map(s => (
                       <option key={s} value={s}>{s}</option>
@@ -691,7 +721,7 @@ export default function TasksView({
                   <label className="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-mono mb-1">Due Date</label>
                   <input
                     type="date"
-                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none"
+                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none dark:[color-scheme:dark]"
                     value={dueDate}
                     onChange={e => setDueDate(e.target.value)}
                   />
@@ -701,7 +731,7 @@ export default function TasksView({
                   <label className="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-mono mb-1">Due Time</label>
                   <input
                     type="time"
-                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none"
+                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none dark:[color-scheme:dark]"
                     value={dueTime}
                     onChange={e => setDueTime(e.target.value)}
                   />
@@ -726,7 +756,7 @@ export default function TasksView({
                   <select
                     value={reminder}
                     onChange={e => setReminder(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none"
+                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none dark:[color-scheme:dark]"
                   >
                     <option value="none">No Reminder</option>
                     <option value="5min">5 minutes before</option>
@@ -742,7 +772,7 @@ export default function TasksView({
                   <select
                     value={repeat}
                     onChange={e => setRepeat(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none"
+                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/60 rounded-lg px-3 py-2 text-xs text-gray-800 dark:text-zinc-100 outline-none dark:[color-scheme:dark]"
                   >
                     <option value="none">Once (No Repeat)</option>
                     <option value="daily">Daily</option>

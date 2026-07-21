@@ -31,7 +31,7 @@ import StatsView from './components/StatsView';
 import SettingsView from './components/SettingsView';
 import CommandPalette from './components/CommandPalette';
 
-import { Sparkles, Terminal, Bell, Lock, Menu, Download, Laptop, Smartphone, Share2, HelpCircle, X } from 'lucide-react';
+import { Sparkles, Bell, Lock, Menu, Download, Laptop, Smartphone, Share2, HelpCircle, X } from 'lucide-react';
 
 // Default Categories as requested
 const DEFAULT_CATEGORIES: Category[] = [
@@ -168,8 +168,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   notificationsEnabled: true,
   shortcutsEnabled: true,
   autoBackup: true,
-  userName: 'Pranav',
-  suiteName: 'Pranav Suite'
+  userName: undefined,
+  suiteName: 'FocusTrak'
 };
 
 export default function App() {
@@ -199,7 +199,7 @@ export default function App() {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
-        logActivity('App Installed', 'Successfully added Pranav Suite to desktop/dock.');
+        logActivity('App Installed', 'Successfully added FocusTrak to desktop/dock.');
         setDeferredPrompt(null);
       }
     } else {
@@ -218,6 +218,10 @@ export default function App() {
   };
 
   const [settings, setSettings] = useState<AppSettings>(() => readSaved('ubuntu_settings', DEFAULT_SETTINGS));
+  const [profileName, setProfileName] = useState('');
+  const [isProfileSetupOpen, setIsProfileSetupOpen] = useState(
+    () => !readSaved('ubuntu_settings', DEFAULT_SETTINGS).userName?.trim()
+  );
 
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -529,7 +533,6 @@ export default function App() {
         settings={settings}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        onInstallApp={handleInstallApp}
       />
 
       {/* Mobile backdrop overlay */}
@@ -553,9 +556,6 @@ export default function App() {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <span className="text-xs font-semibold uppercase font-mono tracking-wider text-gray-400 dark:text-sophisticated-muted flex items-center gap-1.5">
-              <Terminal className="w-4 h-4 text-sophisticated-accent" /> LOCAL WORKSPACE RUNTIME
-            </span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -600,6 +600,7 @@ export default function App() {
               onDeleteTask={handleDeleteTask}
               onRestoreTask={handleRestoreTask}
               onDuplicateTask={handleDuplicateTask}
+              onAddCategory={handleAddCategory}
             />
           )}
 
@@ -700,11 +701,11 @@ export default function App() {
             <div className="p-6 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/10 border-b border-gray-100 dark:border-sophisticated-border flex items-start justify-between">
               <div className="flex gap-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#5E6AD2] to-[#9B6AD2] flex items-center justify-center text-white font-bold text-xl shadow-md shadow-[#5E6AD2]/20">
-                  {(settings.userName || 'Pranav').charAt(0).toUpperCase()}
+                  {(settings.userName || 'F').charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-gray-900 dark:text-sophisticated-text flex items-center gap-2">
-                    Install {settings.suiteName || 'Pranav Suite'}
+                    Install {settings.suiteName || 'FocusTrak'}
                   </h3>
                   <p className="text-[11px] text-gray-400 mt-1">
                     Add the workspace directly to your taskbar/dock for a standalone, offline, tabless window, just like Notion.
@@ -732,7 +733,7 @@ export default function App() {
                       Desktop (Chrome, Edge, Opera)
                     </h4>
                     <p className="text-[11px] text-gray-500 dark:text-sophisticated-muted mt-1 leading-relaxed">
-                      Click the <strong className="text-indigo-600 dark:text-sophisticated-accent">Install icon (⤓)</strong> located at the far right of your browser's top address bar, or click "Install Pranav Suite" from the browser's settings menu (three dots).
+                      Click the <strong className="text-indigo-600 dark:text-sophisticated-accent">Install icon (⤓)</strong> located at the far right of your browser's top address bar, or choose “Install FocusTrak” from the browser menu.
                     </p>
                   </div>
                 </div>
@@ -782,6 +783,34 @@ export default function App() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {isProfileSetupOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const name = profileName.trim();
+              if (!name) return;
+              setSettings((current) => ({ ...current, userName: name, suiteName: 'FocusTrak' }));
+              setIsProfileSetupOpen(false);
+            }}
+            className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-sophisticated-border dark:bg-sophisticated-sidebar"
+          >
+            <p className="text-xs font-bold uppercase tracking-widest text-sophisticated-accent">Welcome to FocusTrak</p>
+            <h2 className="mt-2 text-xl font-bold text-gray-900 dark:text-sophisticated-text">What should we call you?</h2>
+            <p className="mt-2 text-sm text-gray-500 dark:text-sophisticated-muted">Your name stays on this device and personalizes your workspace.</p>
+            <input
+              autoFocus
+              required
+              value={profileName}
+              onChange={(event) => setProfileName(event.target.value)}
+              placeholder="Enter your name"
+              className="mt-5 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-sophisticated-accent dark:border-sophisticated-border dark:bg-sophisticated-bg dark:text-sophisticated-text"
+            />
+            <button type="submit" className="mt-4 w-full rounded-lg bg-sophisticated-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-sophisticated-accent-hover">Continue</button>
+          </form>
         </div>
       )}
 

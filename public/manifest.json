@@ -1,6 +1,6 @@
 {
-  "name": "Pranav Suite",
-  "short_name": "Pranav",
+  "name": "FocusTrak",
+  "short_name": "FocusTrak",
   "description": "Sophisticated productivity workspace for task planning, habit tracking, and local DB transfer.",
   "start_url": "/",
   "display": "standalone",

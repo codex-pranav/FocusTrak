@@ -42,7 +42,7 @@ export default function DashboardView({
   const [quickPriority, setQuickPriority] = useState<Priority>(Priority.MEDIUM);
 
   const [isEditingName, setIsEditingName] = useState(false);
-  const [tempName, setTempName] = useState(settings.userName || 'Pranav');
+  const [tempName, setTempName] = useState(settings.userName || '');
 
   const handleSaveName = () => {
     if (tempName.trim()) {
@@ -182,13 +182,13 @@ export default function DashboardView({
               Welcome back,{' '}
               <span 
                 onClick={() => {
-                  setTempName(settings.userName || 'Pranav');
+                  setTempName(settings.userName || '');
                   setIsEditingName(true);
                 }}
                 className="text-sophisticated-accent cursor-pointer hover:underline decoration-dashed decoration-2 underline-offset-4 flex items-center gap-1.5 group transition-all"
                 title="Click to edit name"
               >
-                {settings.userName || 'Pranav'}
+                {settings.userName || 'there'}
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-zinc-200 dark:bg-sophisticated-active px-1.5 py-0.5 rounded font-mono text-zinc-500 dark:text-sophisticated-muted cursor-pointer font-bold">
                   Edit
                 </span>

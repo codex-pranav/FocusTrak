@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pranav-suite-v1';
+const CACHE_NAME = 'focustrak-v1';
 const ASSETS = [
   '/',
   '/index.html',
@@ -10,14 +10,20 @@ self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
-    })
+    }).then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then((names) => Promise.all(names.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))))
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      return cachedResponse || fetch(e.request);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.match(e.request).then((cachedResponse) => cachedResponse || fetch(e.request)))
   );
 });
