@@ -1,13 +1,15 @@
 import Database from "@tauri-apps/plugin-sql";
 
 let db: Database | null = null;
+let dbPromise: Promise<Database> | null = null;
 
-export async function getDatabase() {
+export async function getDatabase(): Promise<Database> {
   if (db) return db;
+  if (dbPromise) return dbPromise;
 
-  db = await Database.load("sqlite:productivity.db");
-
-  await db.execute(`
+  dbPromise = (async () => {
+    const database = await Database.load('sqlite:productivity.db');
+    await database.execute(`
     CREATE TABLE IF NOT EXISTS tasks (
       id TEXT PRIMARY KEY,
 
@@ -48,7 +50,15 @@ export async function getDatabase() {
 
       recently_deleted INTEGER DEFAULT 0
     );
-  `);
+    `);
+    db = database;
+    return database;
+  })();
 
-  return db;
+  try {
+    return await dbPromise;
+  } catch (error) {
+    dbPromise = null;
+    throw error;
+  }
 }

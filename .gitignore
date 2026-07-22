@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+focus-trak.keystore
+focus-trak.keystore
+src-tauri/gen/android/app/build.gradle.kts.save

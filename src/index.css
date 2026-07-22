@@ -172,3 +172,225 @@
     @apply font-sans;
   }
 }
+
+/* Android-only shell: desktop keeps the existing sidebar/header at md and above. */
+.mobile-only,
+.mobile-bottom-nav,
+.mobile-fab,
+.mobile-fab-actions {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  html {
+    min-height: 100%;
+    background: #f3f4f6;
+  }
+
+  html.dark {
+    background: #0C0C0E;
+  }
+
+  body {
+    min-height: 100dvh;
+    overscroll-behavior: none;
+    overflow-x: hidden;
+  }
+
+  #root { width: 100%; overflow-x: hidden; }
+
+  .mobile-only { display: flex; }
+
+  .mobile-topbar {
+    min-height: calc(56px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 12px 0;
+    align-items: center;
+    gap: 8px;
+    background: color-mix(in srgb, var(--background) 92%, transparent);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    z-index: 20;
+  }
+
+  .mobile-topbar-title { font-size: 1rem; font-weight: 700; line-height: 1.1; }
+  .mobile-topbar-subtitle { color: var(--muted-foreground); font-size: .7rem; margin-top: 2px; }
+
+  .mobile-icon-button {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--foreground);
+    border-radius: 999px;
+    transition: background-color .18s ease, transform .18s ease;
+  }
+
+  .mobile-icon-button:active { background: var(--secondary); transform: scale(.94); }
+  .mobile-icon-button svg { width: 22px; height: 22px; }
+
+  .mobile-workspace {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+  }
+
+  .quick-add-form { min-width: 0; max-width: 100%; }
+  .quick-add-controls { min-width: 0; width: 100%; }
+
+  .mobile-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    min-height: calc(64px + env(safe-area-inset-bottom));
+    padding: 6px 8px env(safe-area-inset-bottom);
+    background: color-mix(in srgb, var(--background) 94%, transparent);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    z-index: 40;
+  }
+
+  .mobile-bottom-nav button {
+    min-height: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border-radius: 16px;
+    color: var(--muted-foreground);
+    font-size: .66rem;
+    font-weight: 600;
+    transition: color .18s ease, background-color .18s ease, transform .18s ease;
+  }
+
+  .mobile-bottom-nav button:active { transform: scale(.94); }
+  .mobile-bottom-nav svg { width: 21px; height: 21px; }
+  .mobile-bottom-nav .mobile-nav-active { color: #5E6AD2; background: rgb(94 106 210 / .12); }
+
+  .mobile-fab {
+    display: inline-flex;
+    position: fixed;
+    right: 20px;
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    width: 56px;
+    height: 56px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: #5E6AD2;
+    color: white;
+    box-shadow: 0 10px 24px rgb(43 48 130 / .35);
+    z-index: 45;
+    transition: transform .2s ease, background-color .2s ease;
+  }
+
+  .mobile-fab svg { width: 27px; height: 27px; }
+  .mobile-fab:active { transform: scale(.93); }
+  .mobile-fab-open { background: #4b57c4; transform: rotate(180deg); }
+
+  .mobile-fab-actions {
+    display: flex;
+    position: fixed;
+    right: 20px;
+    bottom: calc(146px + env(safe-area-inset-bottom));
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    z-index: 44;
+    animation: mobile-pop-in .18s ease-out;
+  }
+
+  .mobile-fab-actions button {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px 0 16px;
+    border-radius: 999px;
+    color: var(--foreground);
+    background: var(--card);
+    box-shadow: 0 6px 20px rgb(0 0 0 / .18);
+    font-size: .82rem;
+    font-weight: 700;
+  }
+
+  .mobile-fab-actions svg { width: 19px; height: 19px; color: #5E6AD2; }
+  .mobile-task-sheet { animation: mobile-sheet-in .2s ease-out; }
+
+  .mobile-task-sheet {
+    max-height: min(78dvh, 620px);
+  }
+
+  .task-modal-actions {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .task-form-section {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--card) 92%, var(--secondary));
+  }
+
+  .task-form-section summary {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    cursor: pointer;
+    color: var(--foreground);
+    font-size: .78rem;
+    font-weight: 700;
+  }
+
+  .task-form-section[open] summary { border-bottom: 1px solid var(--border); }
+  .task-form-section > :not(summary) { margin-left: 14px; margin-right: 14px; }
+  .task-form-section > :last-child { margin-bottom: 14px; }
+  .task-form-section > .grid { margin-top: 14px; }
+  .task-form-section > div + div { margin-top: 14px; }
+
+  .task-form-section .flex.gap-2 { gap: 8px; }
+  .task-form-section .flex.gap-2 > button { min-width: 48px; min-height: 40px; }
+  .task-form-section .flex.flex-wrap { gap: 8px; margin-top: 10px; }
+
+  .task-form-section .max-h-24 {
+    max-height: 72px;
+    padding: 6px;
+  }
+
+  /* Turn the desktop density task rows into independently tappable mobile cards. */
+  .task-list {
+    background: transparent;
+    border: 0;
+    overflow: visible;
+  }
+
+  .task-row {
+    align-items: flex-start;
+    min-height: 84px;
+    margin-bottom: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card);
+    box-shadow: 0 1px 2px rgb(0 0 0 / .04);
+  }
+
+  .task-row > div:first-child { min-width: 0; gap: 10px; }
+  .task-row input[type="checkbox"] { width: 20px; height: 20px; flex: 0 0 auto; }
+  .task-row > div:last-child { gap: 6px; padding-left: 8px; }
+  .task-row > div:last-child > span:nth-child(2) { display: none; }
+  .task-row .task-actions { opacity: 1; }
+  .task-row button { min-width: 36px; min-height: 36px; }
+
+  @keyframes mobile-pop-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mobile-sheet-in { from { transform: translateY(32px); } to { transform: translateY(0); } }
+}
+
+@media (min-width: 768px) {
+  .task-form-section { display: contents; }
+  .task-form-section > summary { display: none; }
+}

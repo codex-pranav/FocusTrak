@@ -11,8 +11,7 @@ import {
   Settings as SettingsIcon,
   Check,
   RotateCcw,
-  User,
-  Monitor
+  User
 } from 'lucide-react';
 
 interface SettingsViewProps {
@@ -27,7 +26,6 @@ interface SettingsViewProps {
   activityLogs: ActivityLog[];
   onImportBackup: (importedState: BackupData) => void;
   onClearDatabase: () => void;
-  onInstallApp?: () => void;
 }
 
 type BackupData = Partial<{
@@ -57,7 +55,6 @@ export default function SettingsView({
   activityLogs,
   onImportBackup,
   onClearDatabase,
-  onInstallApp,
 }: SettingsViewProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -155,29 +152,6 @@ export default function SettingsView({
                 className="w-full text-xs font-medium px-3 py-2 bg-zinc-50 dark:bg-sophisticated-bg border border-gray-200 dark:border-sophisticated-border rounded-lg outline-none focus:border-sophisticated-accent transition-colors"
               />
             </div>
-          </div>
-        </div>
-
-        {/* Card: Desktop Application Integration */}
-        <div className="bg-white dark:bg-sophisticated-sidebar border border-gray-100 dark:border-sophisticated-border rounded-xl p-5 space-y-4 text-gray-900 dark:text-sophisticated-text animate-in slide-in-from-top-4 duration-300">
-          <h3 className="text-xs font-bold text-gray-800 dark:text-sophisticated-text uppercase tracking-wider font-mono flex items-center gap-2">
-            <Monitor className="w-4 h-4 text-sophisticated-accent" /> Desktop App (Notion Style)
-          </h3>
-          <p className="text-[11px] text-gray-400 dark:text-sophisticated-muted leading-relaxed font-mono">
-            Install {settings.suiteName || 'FocusTrak'} directly to your desktop or mobile home screen. It will launch in an isolated window with standard app shortcuts, high-performance offline startup, and zero browser tab clutter!
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-zinc-50 dark:bg-sophisticated-bg border border-gray-150/50 dark:border-sophisticated-border/60 rounded-xl">
-            <div className="space-y-1 text-center sm:text-left">
-              <span className="text-xs font-bold text-gray-800 dark:text-sophisticated-text block">Launch Standalone Workspace</span>
-              <span className="text-[10px] text-gray-400 dark:text-sophisticated-muted font-mono">Optimized for Windows, macOS, Linux, Android &amp; iOS</span>
-            </div>
-            <button
-              onClick={onInstallApp}
-              className="w-full sm:w-auto px-4 py-2.5 bg-[#5E6AD2] hover:bg-[#4d59be] text-white text-xs font-bold rounded-lg shadow-sm hover:scale-[1.02] transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Monitor className="w-3.5 h-3.5" />
-              <span>Install to Desktop / Dock</span>
-            </button>
           </div>
         </div>
 
