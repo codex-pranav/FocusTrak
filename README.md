@@ -60,7 +60,7 @@ FocusTrak/
 
 ```bash
 git clone https://github.com/codex-pranav/FocusTrak.git
-cd Todo
+cd FocusTrak
 ```
 
 ---
