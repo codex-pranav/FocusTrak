@@ -19,7 +19,7 @@ interface DashboardViewProps {
   categories: Category[];
   activityLogs: ActivityLog[];
   streak: number;
-  onAddTask: (task: Omit<Task, 'id' | 'createdDate'>) => void;
+  onAddTask: (task: Omit<Task, 'id' | 'createdDate'>) => Promise<void>;
   onSelectTask: (task: Task) => void;
   onToggleComplete: (task: Task) => void;
   settings: AppSettings;
@@ -40,6 +40,7 @@ export default function DashboardView({
   const [quickTitle, setQuickTitle] = useState('');
   const [quickCategory, setQuickCategory] = useState(categories[0]?.name || 'Personal');
   const [quickPriority, setQuickPriority] = useState<Priority>(Priority.MEDIUM);
+  const [quickAddError, setQuickAddError] = useState<string | null>(null);
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(settings.userName || '');
@@ -75,7 +76,7 @@ export default function DashboardView({
 
   const pinnedTasks = tasks.filter(t => t.pinned && !t.recentlyDeleted && t.status !== Status.COMPLETED);
 
-  const handleQuickAddSubmit = (e: React.FormEvent) => {
+  const handleQuickAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quickTitle.trim()) return;
 
@@ -109,27 +110,32 @@ export default function DashboardView({
       }
     });
 
-    onAddTask({
-      title: parsedTitle.trim(),
-      description: 'Quickly added via main dashboard dashboard command.',
-      category: parsedCategory,
-      priority: parsedPriority,
-      status: Status.PENDING,
-      dueDate: todayStr,
-      dueTime: '12:00',
-      estimatedDuration: 25,
-      actualDuration: 0,
-      reminder: '15min',
-      repeat: 'none',
-      notes: '',
-      tags: [],
-      attachments: [],
-      color: categories.find(c => c.name === parsedCategory)?.color || '#6366f1',
-      pinned: false,
-      favorite: false,
-    });
-
-    setQuickTitle('');
+    try {
+      setQuickAddError(null);
+      await onAddTask({
+        title: parsedTitle.trim(),
+        description: 'Quickly added via main dashboard dashboard command.',
+        category: parsedCategory,
+        priority: parsedPriority,
+        status: Status.PENDING,
+        dueDate: todayStr,
+        dueTime: '12:00',
+        estimatedDuration: 25,
+        actualDuration: 0,
+        reminder: '15min',
+        repeat: 'none',
+        notes: '',
+        tags: [],
+        attachments: [],
+        color: categories.find(c => c.name === parsedCategory)?.color || '#6366f1',
+        pinned: false,
+        favorite: false,
+      });
+      setQuickTitle('');
+    } catch (error) {
+      console.error('Quick Add failed:', error);
+      setQuickAddError('Could not save task. Please try again.');
+    }
   };
 
   // Get productivity index
@@ -280,19 +286,19 @@ export default function DashboardView({
       </div>
 
       {/* Quick Add Task Parser Bar */}
-      <form onSubmit={handleQuickAddSubmit} className="flex gap-2 p-1.5 bg-white dark:bg-sophisticated-sidebar border border-gray-200 dark:border-sophisticated-border rounded-xl shadow-xs">
+      <form onSubmit={handleQuickAddSubmit} className="quick-add-form flex flex-col md:flex-row gap-2 p-1.5 bg-white dark:bg-sophisticated-sidebar border border-gray-200 dark:border-sophisticated-border rounded-xl shadow-xs">
         <input
           type="text"
-          className="flex-1 bg-transparent px-3 py-1.5 text-xs text-gray-800 dark:text-sophisticated-text placeholder-gray-400 dark:placeholder-sophisticated-muted outline-none"
+          className="min-w-0 w-full md:flex-1 bg-transparent px-3 py-1.5 text-xs text-gray-800 dark:text-sophisticated-text placeholder-gray-400 dark:placeholder-sophisticated-muted outline-none"
           placeholder="Quick Add Task... e.g. Finish chemistry assignment !High #College"
           value={quickTitle}
           onChange={e => setQuickTitle(e.target.value)}
         />
-        <div className="flex items-center gap-1.5 px-2">
+        <div className="quick-add-controls grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:flex items-center gap-1.5">
           <select
             value={quickCategory}
             onChange={e => setQuickCategory(e.target.value)}
-            className="bg-zinc-50 dark:bg-sophisticated-bg text-[10px] font-medium text-gray-600 dark:text-sophisticated-text border border-gray-100 dark:border-sophisticated-border rounded px-2 py-1 outline-none cursor-pointer dark:[color-scheme:dark]"
+            className="min-w-0 w-full md:w-auto bg-zinc-50 dark:bg-sophisticated-bg text-[10px] font-medium text-gray-600 dark:text-sophisticated-text border border-gray-100 dark:border-sophisticated-border rounded px-2 py-1 outline-none cursor-pointer dark:[color-scheme:dark]"
           >
             {categories.map(c => (
               <option key={c.id} value={c.name}>{c.name}</option>
@@ -301,21 +307,22 @@ export default function DashboardView({
           <select
             value={quickPriority}
             onChange={e => setQuickPriority(e.target.value as Priority)}
-            className="bg-zinc-50 dark:bg-sophisticated-bg text-[10px] font-medium text-gray-600 dark:text-sophisticated-text border border-gray-100 dark:border-sophisticated-border rounded px-2 py-1 outline-none cursor-pointer dark:[color-scheme:dark]"
+            className="min-w-0 w-full md:w-auto bg-zinc-50 dark:bg-sophisticated-bg text-[10px] font-medium text-gray-600 dark:text-sophisticated-text border border-gray-100 dark:border-sophisticated-border rounded px-2 py-1 outline-none cursor-pointer dark:[color-scheme:dark]"
           >
             {Object.values(Priority).map(p => (
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
+          <button
+            type="submit"
+            className="shrink-0 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-sophisticated-accent dark:hover:bg-sophisticated-accent-hover text-white rounded-lg flex items-center justify-center gap-1 text-[11px] font-semibold transition-colors cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add</span>
+          </button>
         </div>
-        <button
-          type="submit"
-          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-sophisticated-accent dark:hover:bg-sophisticated-accent-hover text-white rounded-lg flex items-center gap-1 text-[11px] font-semibold transition-colors cursor-pointer"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>Add</span>
-        </button>
       </form>
+      {quickAddError && <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">{quickAddError}</p>}
 
       {/* Main Grid Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

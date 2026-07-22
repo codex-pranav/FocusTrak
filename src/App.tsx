@@ -30,8 +30,9 @@ import HabitsGoalsView from './components/HabitsGoalsView';
 import StatsView from './components/StatsView';
 import SettingsView from './components/SettingsView';
 import CommandPalette from './components/CommandPalette';
+import MobileNavigation from './components/MobileNavigation';
 
-import { Sparkles, Bell, Lock, Menu, Download, Laptop, Smartphone, Share2, HelpCircle, X } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 
 // Default Categories as requested
 const DEFAULT_CATEGORIES: Category[] = [
@@ -179,33 +180,8 @@ export default function App() {
     return typeof window !== 'undefined' ? window.innerWidth >= 768 : true;
   });
 
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      logActivity('PWA Ready', 'Workspace became installable as a standalone desktop application.');
-    };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
-
-  const handleInstallApp = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        logActivity('App Installed', 'Successfully added FocusTrak to desktop/dock.');
-        setDeferredPrompt(null);
-      }
-    } else {
-      setIsInstallModalOpen(true);
-    }
-  };
+  const [taskCreationRequest, setTaskCreationRequest] = useState(0);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
   // Core App states loaded from LocalStorage
   const readSaved = <T,>(key: string, fallback: T): T => {
@@ -349,6 +325,7 @@ export default function App() {
       logActivity("Task Created", `Added task: "${newTask.title}" under ${newTask.category}.`);
     } catch (error) {
       console.error('Failed to add task:', error);
+      throw error;
     }
   };
 
@@ -357,8 +334,9 @@ export default function App() {
     await updateTaskDB(updated);
     await loadTasks();
     logActivity("Task Updated", `Modified task: "${updated.title}".`);
-  } catch (error) {
+    } catch (error) {
     console.error('Failed to update task:', error);
+    throw error;
   }
 };
 
@@ -518,7 +496,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-[#f3f4f6] dark:bg-sophisticated-bg transition-colors duration-250 font-sans overflow-hidden select-none text-gray-900 dark:text-sophisticated-text">
+    <div className="flex h-[100dvh] md:h-screen bg-[#f3f4f6] dark:bg-sophisticated-bg transition-colors duration-250 font-sans overflow-hidden select-none text-gray-900 dark:text-sophisticated-text">
 
       {/* Sidebar navigation controls */}
       <Sidebar
@@ -546,8 +524,20 @@ export default function App() {
       {/* Main Workspace Frame container */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
+        <MobileNavigation
+          activeView={activeView}
+          onNavigate={(view) => setActiveView(view)}
+          onOpenMenu={() => setIsSidebarOpen(true)}
+          onSearch={() => setIsCommandPaletteOpen(true)}
+          onCreateTask={() => {
+            setActiveView('tasks');
+            setTaskCreationRequest((request) => request + 1);
+          }}
+          isTaskModalOpen={isTaskModalOpen}
+        />
+
         {/* Workspace Top Header Bar */}
-        <header className="h-14 px-6 border-b border-gray-100 dark:border-sophisticated-border bg-white/80 dark:bg-sophisticated-sidebar/80 backdrop-blur-md flex items-center justify-between shrink-0 z-10">
+        <header className="hidden md:flex h-14 px-6 border-b border-gray-100 dark:border-sophisticated-border bg-white/80 dark:bg-sophisticated-sidebar/80 backdrop-blur-md items-center justify-between shrink-0 z-10">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -567,7 +557,7 @@ export default function App() {
         </header>
 
         {/* Dynamic Workspace Workspace */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+        <div className="mobile-workspace flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
 
           {activeView === 'dashboard' && (
             <DashboardView
@@ -601,6 +591,8 @@ export default function App() {
               onRestoreTask={handleRestoreTask}
               onDuplicateTask={handleDuplicateTask}
               onAddCategory={handleAddCategory}
+              createRequest={taskCreationRequest}
+              onModalOpenChange={setIsTaskModalOpen}
             />
           )}
 
@@ -662,7 +654,6 @@ export default function App() {
               activityLogs={activityLogs}
               onImportBackup={handleImportBackup}
               onClearDatabase={handleClearDatabase}
-              onInstallApp={handleInstallApp}
             />
           )}
 
@@ -692,99 +683,6 @@ export default function App() {
           setIsCommandPaletteOpen(false);
         }}
       />
-
-      {/* PWA Elegant Installation Guide Modal */}
-      {isInstallModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-sophisticated-sidebar border border-gray-100 dark:border-sophisticated-border rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-            {/* Header banner */}
-            <div className="p-6 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/10 border-b border-gray-100 dark:border-sophisticated-border flex items-start justify-between">
-              <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#5E6AD2] to-[#9B6AD2] flex items-center justify-center text-white font-bold text-xl shadow-md shadow-[#5E6AD2]/20">
-                  {(settings.userName || 'F').charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-sophisticated-text flex items-center gap-2">
-                    Install {settings.suiteName || 'FocusTrak'}
-                  </h3>
-                  <p className="text-[11px] text-gray-400 mt-1">
-                    Add the workspace directly to your taskbar/dock for a standalone, offline, tabless window, just like Notion.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsInstallModalOpen(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-sophisticated-text hover:bg-gray-100 dark:hover:bg-sophisticated-active transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Content Steps */}
-            <div className="p-6 space-y-5">
-              <div className="space-y-3.5">
-                {/* Method 1: Desktop */}
-                <div className="flex gap-3.5 p-3 rounded-xl bg-zinc-50 dark:bg-sophisticated-bg border border-gray-150/40 dark:border-sophisticated-border/60">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
-                    <Laptop className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-800 dark:text-sophisticated-text flex items-center gap-1.5 font-mono uppercase tracking-wider">
-                      Desktop (Chrome, Edge, Opera)
-                    </h4>
-                    <p className="text-[11px] text-gray-500 dark:text-sophisticated-muted mt-1 leading-relaxed">
-                      Click the <strong className="text-indigo-600 dark:text-sophisticated-accent">Install icon (⤓)</strong> located at the far right of your browser's top address bar, or choose “Install FocusTrak” from the browser menu.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Method 2: Safari macOS/iOS */}
-                <div className="flex gap-3.5 p-3 rounded-xl bg-zinc-50 dark:bg-sophisticated-bg border border-gray-150/40 dark:border-sophisticated-border/60">
-                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0 text-purple-600 dark:text-purple-400">
-                    <Share2 className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-800 dark:text-sophisticated-text flex items-center gap-1.5 font-mono uppercase tracking-wider">
-                      macOS & iOS Safari
-                    </h4>
-                    <p className="text-[11px] text-gray-500 dark:text-sophisticated-muted mt-1 leading-relaxed">
-                      Click the browser's <strong className="text-purple-600 dark:text-purple-400">Share button (⎋)</strong>, scroll down, and select <strong className="text-purple-600 dark:text-purple-400">"Add to Dock"</strong> or <strong className="text-purple-600 dark:text-purple-400">"Add to Home Screen"</strong>.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Method 3: Mobile Android */}
-                <div className="flex gap-3.5 p-3 rounded-xl bg-zinc-50 dark:bg-sophisticated-bg border border-gray-150/40 dark:border-sophisticated-border/60">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0 text-emerald-600 dark:text-emerald-400">
-                    <Smartphone className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-800 dark:text-sophisticated-text flex items-center gap-1.5 font-mono uppercase tracking-wider">
-                      Mobile Chrome / Firefox
-                    </h4>
-                    <p className="text-[11px] text-gray-500 dark:text-sophisticated-muted mt-1 leading-relaxed">
-                      Tap the options menu (three dots in top right or bottom menu) and choose <strong className="text-emerald-600 dark:text-emerald-400">"Install App"</strong> or <strong className="text-emerald-600 dark:text-emerald-400">"Add to Home Screen"</strong>.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action area */}
-              <div className="pt-2 border-t border-gray-50 dark:border-sophisticated-border/60 flex items-center justify-between gap-4">
-                <span className="text-[10px] text-gray-400 dark:text-sophisticated-muted font-mono leading-tight flex items-center gap-1">
-                  <HelpCircle className="w-3.5 h-3.5 text-indigo-500" /> Once added, you can search and open it from your system launcher!
-                </span>
-                <button
-                  onClick={() => setIsInstallModalOpen(false)}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-600/10 cursor-pointer"
-                >
-                  Understood
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {isProfileSetupOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">

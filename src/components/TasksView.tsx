@@ -27,12 +27,14 @@ const CUSTOM_CATEGORY_VALUE = '__custom_category__';
 interface TasksViewProps {
   tasks: Task[];
   categories: Category[];
-  onAddTask: (task: Omit<Task, 'id' | 'createdDate'>) => void;
-  onUpdateTask: (task: Task) => void;
-  onDeleteTask: (taskId: string) => void;
-  onRestoreTask: (taskId: string) => void;
-  onDuplicateTask: (task: Task) => void;
+  onAddTask: (task: Omit<Task, 'id' | 'createdDate'>) => Promise<void>;
+  onUpdateTask: (task: Task) => Promise<void>;
+  onDeleteTask: (taskId: string) => Promise<void>;
+  onRestoreTask: (taskId: string) => Promise<void>;
+  onDuplicateTask: (task: Task) => Promise<void>;
   onAddCategory: (category: Omit<Category, 'id'>) => void;
+  createRequest?: number;
+  onModalOpenChange?: (isOpen: boolean) => void;
 }
 
 export default function TasksView({
@@ -44,6 +46,8 @@ export default function TasksView({
   onRestoreTask,
   onDuplicateTask,
   onAddCategory,
+  createRequest = 0,
+  onModalOpenChange,
 }: TasksViewProps) {
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [search, setSearch] = useState('');
@@ -81,6 +85,8 @@ export default function TasksView({
   const [pinned, setPinned] = useState(false);
   const [favorite, setFavorite] = useState(false);
   const [dependencies, setDependencies] = useState<string[]>([]);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const openAddModal = () => {
     setEditingTask(null);
@@ -102,8 +108,18 @@ export default function TasksView({
     setPinned(false);
     setFavorite(false);
     setDependencies([]);
+    setFormError(null);
     setIsModalOpen(true);
   };
+
+  React.useEffect(() => {
+    if (createRequest > 0) openAddModal();
+  }, [createRequest]);
+
+  React.useEffect(() => {
+    onModalOpenChange?.(isModalOpen);
+    return () => onModalOpenChange?.(false);
+  }, [isModalOpen, onModalOpenChange]);
 
   const openEditModal = (task: Task) => {
     setEditingTask(task);
@@ -128,10 +144,16 @@ export default function TasksView({
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const selectedCategory = (isCustomCategory ? customCategory : category).trim();
-    if (!title.trim() || !selectedCategory) return;
+    if (!title.trim() || !selectedCategory) {
+      setFormError('A task title and category are required.');
+      return;
+    }
+
+    setIsSaving(true);
+    setFormError(null);
 
     if (!categories.some((item) => item.name.toLowerCase() === selectedCategory.toLowerCase())) {
       onAddCategory({ name: selectedCategory, color: '#6366f1', icon: 'Tag' });
@@ -139,8 +161,9 @@ export default function TasksView({
 
     const taskColor = categories.find(c => c.name.toLowerCase() === selectedCategory.toLowerCase())?.color || '#6366f1';
 
-    if (editingTask) {
-      onUpdateTask({
+    try {
+      if (editingTask) {
+        await onUpdateTask({
         ...editingTask,
         title,
         description,
@@ -159,9 +182,9 @@ export default function TasksView({
         favorite,
         color: taskColor,
         dependencies,
-      });
-    } else {
-      onAddTask({
+        });
+      } else {
+        await onAddTask({
         title,
         description,
         category: selectedCategory,
@@ -180,9 +203,15 @@ export default function TasksView({
         color: taskColor,
         dependencies,
         attachments: [],
-      });
+        });
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Failed to save task:', error);
+      setFormError('Could not save this task. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
-    setIsModalOpen(false);
   };
 
   const addTag = () => {
@@ -428,7 +457,7 @@ export default function TasksView({
 
       {/* Main Task List/Board Body */}
       {viewMode === 'list' ? (
-        <div className="bg-white dark:bg-sophisticated-sidebar border border-gray-100 dark:border-sophisticated-border rounded-xl divide-y divide-gray-100 dark:divide-sophisticated-border overflow-hidden">
+        <div className="task-list bg-white dark:bg-sophisticated-sidebar border border-gray-100 dark:border-sophisticated-border rounded-xl divide-y divide-gray-100 dark:divide-sophisticated-border overflow-hidden">
           {sortedTasks.length === 0 ? (
             <div className="p-12 text-center text-xs text-gray-400 dark:text-sophisticated-muted">
               No tasks found. Try tweaking your filters or create a new task!
@@ -443,7 +472,7 @@ export default function TasksView({
               return (
                 <div 
                   key={task.id} 
-                  className={`p-3.5 flex items-center justify-between group transition-all ${
+                  className={`task-row p-3.5 flex items-center justify-between group transition-all ${
                     isSelected ? 'bg-indigo-50/20 dark:bg-sophisticated-active/40' : 'hover:bg-gray-50/50 dark:hover:bg-sophisticated-active/20'
                   }`}
                 >
@@ -528,7 +557,7 @@ export default function TasksView({
                     </span>
 
                     {/* Desktop Toolbar buttons on hover */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="task-actions flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={() => onDuplicateTask(task)}
                         className="p-1 rounded text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-600 dark:hover:text-zinc-200"
@@ -615,10 +644,10 @@ export default function TasksView({
 
       {/* Task Creation / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/40 backdrop-blur-xs overflow-y-auto">
           <form 
             onSubmit={handleSave}
-            className="w-full max-w-xl bg-white dark:bg-[#1e1e2e] border border-gray-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden"
+            className="w-full max-w-xl max-h-[92dvh] md:max-h-none flex flex-col bg-white dark:bg-[#1e1e2e] border border-gray-200 dark:border-zinc-800 rounded-t-[1.75rem] md:rounded-xl shadow-2xl overflow-hidden mobile-task-sheet"
           >
             <div className="px-5 py-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center">
               <h3 className="text-sm font-bold text-gray-900 dark:text-zinc-100 tracking-tight flex items-center gap-2">
@@ -633,7 +662,10 @@ export default function TasksView({
               </button>
             </div>
 
-            <div className="px-5 py-4 space-y-4 max-h-[500px] overflow-y-auto">
+            <div className="flex-1 min-h-0 px-5 py-4 space-y-4 overflow-y-auto md:max-h-[500px]">
+              {formError && <p role="alert" className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:bg-rose-950/30 dark:text-rose-300">{formError}</p>}
+              <details className="task-form-section" open>
+                <summary>Basic</summary>
               {/* Task Title */}
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-mono mb-1">Task Title *</label>
@@ -715,6 +747,10 @@ export default function TasksView({
                 </div>
               </div>
 
+              </details>
+
+              <details className="task-form-section">
+                <summary>Scheduling</summary>
               {/* Row: Due Date, Due Time, Estimated Duration */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -782,6 +818,10 @@ export default function TasksView({
                 </div>
               </div>
 
+              </details>
+
+              <details className="task-form-section">
+                <summary>Advanced</summary>
               {/* Tags Section */}
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-mono mb-1">Tags</label>
@@ -846,7 +886,7 @@ export default function TasksView({
               </div>
 
               {/* Pinned & Favorite Flags */}
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -871,10 +911,11 @@ export default function TasksView({
                   </span>
                 </label>
               </div>
+              </details>
 
             </div>
 
-            <div className="px-5 py-3 border-t border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/60 flex justify-end gap-2">
+            <div className="task-modal-actions shrink-0 px-5 py-3 border-t border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/60 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
@@ -884,9 +925,10 @@ export default function TasksView({
               </button>
               <button
                 type="submit"
+                disabled={isSaving}
                 className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold transition-colors"
               >
-                Save Changes
+                {isSaving ? 'Saving…' : editingTask ? 'Save Changes' : 'Save Task'}
               </button>
             </div>
           </form>
