@@ -59,7 +59,7 @@ FocusTrak/
 ### Clone the repository
 
 ```bash
-git clone https://github.com/codex-pranav/Todo.git
+git clone https://github.com/codex-pranav/FocusTrak.git
 cd Todo
 ```
 
