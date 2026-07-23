@@ -2,24 +2,24 @@
 
 > A modern, fast, and distraction-free cross-platform productivity app built with **Tauri v2**, **React**, **TypeScript**, **Rust**, and **SQLite**.
 
-FocusTrak is designed for students, developers, professionals, and anyone who wants a lightweight, privacy-focused productivity application. Manage your tasks, build habits, stay focused, and organize your work — all while keeping your data stored locally on your device.
+FocusTrak is designed for students, developers, and professionals who want a lightweight, privacy-focused productivity application that works completely offline. Manage tasks, organize notes, build habits, stay focused, and track your productivity — all while keeping your data stored locally on your device.
 
 ---
 
 ## ✨ Features
 
-- ✅ Smart Task Management
+- ✅ Create, edit, and delete tasks
 - 📅 Interactive Calendar
-- ➕ Quick Task Creation
+- ⭐ Priority management
 - 🎯 Focus Mode (Pomodoro Timer)
 - 🔥 Habit Tracker
 - 📝 Notes & Documents
 - 📊 Productivity Statistics
 - ⚙️ Personalized Settings
-- 💾 Local SQLite Database
+- 💾 Local SQLite database
 - 📱 Linux & Android Support
-- ⚡ Native Performance powered by Tauri
-- 🔒 Offline-first (Your data never leaves your device)
+- ⚡ Fast native performance powered by Tauri
+- 🔒 Offline-first (your data stays on your device)
 
 ---
 
@@ -81,11 +81,19 @@ FocusTrak is designed for students, developers, professionals, and anyone who wa
 
 ---
 
-## ⚙️ Settings & Statistics
+## 📊 Productivity Statistics
 
 | Desktop | Android |
 |----------|----------|
-| ![](screenshots/Desktop/desktop-settings.png)<br><br>![](screenshots/Desktop/desktop-stats.png) | ![](screenshots/Mobile/android-settings.jpeg) |
+| ![](screenshots/Desktop/desktop-stats.png) | ![](screenshots/Mobile/android-stats.jpeg) |
+
+---
+
+## ⚙️ Settings
+
+| Desktop | Android |
+|----------|----------|
+| ![](screenshots/Desktop/desktop-settings.png) | ![](screenshots/Mobile/android-settings.jpeg) |
 
 ---
 
@@ -93,13 +101,13 @@ FocusTrak is designed for students, developers, professionals, and anyone who wa
 
 | Technology | Purpose |
 |------------|---------|
-| Tauri v2 | Cross-platform Desktop & Android Framework |
+| Tauri v2 | Cross-platform Framework |
 | React | Frontend |
 | TypeScript | Type Safety |
-| Rust | Backend |
-| SQLite | Local Database |
 | Vite | Build Tool |
+| SQLite | Local Database |
 | Tailwind CSS | UI Styling |
+| Rust | Backend |
 
 ---
 
@@ -108,8 +116,8 @@ FocusTrak is designed for students, developers, professionals, and anyone who wa
 ```text
 FocusTrak/
 │
-├── src/                     # React Frontend
-├── src-tauri/               # Rust Backend
+├── src/                 # React frontend
+├── src-tauri/           # Tauri backend (Rust)
 ├── screenshots/
 │   ├── Desktop/
 │   └── Mobile/
@@ -122,7 +130,7 @@ FocusTrak/
 
 ## 🚀 Getting Started
 
-### Clone the Repository
+### Clone the repository
 
 ```bash
 git clone https://github.com/codex-pranav/FocusTrak.git
@@ -131,7 +139,7 @@ cd FocusTrak
 
 ---
 
-### Install Dependencies
+### Install dependencies
 
 ```bash
 npm install
@@ -139,7 +147,7 @@ npm install
 
 ---
 
-### Run in Development
+### Run in development
 
 ```bash
 npm run tauri dev
@@ -147,7 +155,7 @@ npm run tauri dev
 
 ---
 
-### Build Production App
+### Build production app
 
 #### Linux
 
@@ -165,7 +173,7 @@ npm run tauri android build
 
 ## 📦 Installation
 
-### Linux (.deb)
+### Linux
 
 ```bash
 sudo apt install ./src-tauri/target/release/bundle/deb/*.deb
@@ -179,30 +187,29 @@ Download the latest **FocusTrak.apk** from the **Releases** section and install 
 
 ## 📌 Roadmap
 
-- [x] Task Management
-- [x] Calendar
+- [x] Task management
+- [x] Interactive Calendar
 - [x] Focus Mode
 - [x] Habit Tracker
 - [x] Notes & Documents
 - [x] Productivity Statistics
-- [x] Local SQLite Database
-- [x] Linux Support
-- [x] Android Support
+- [x] Local SQLite database
+- [x] Native desktop application
+- [x] Android support
 - [ ] Notifications
-- [ ] Recurring Tasks
+- [ ] Recurring tasks
 - [ ] Cloud Sync
 - [ ] Backup & Restore
 - [ ] Themes
-- [ ] Windows Support
-- [ ] macOS Support
+- [ ] Auto update
 
 ---
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are always welcome.
+Contributions, issues, and feature requests are welcome.
 
-Feel free to fork this repository and submit a Pull Request.
+Feel free to fork the repository and submit a Pull Request.
 
 ---
 
